@@ -4,9 +4,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Set git to use 'main' as the default branch name to avoid warnings
 git config --global init.defaultBranch main
 
-# Go into app and game directories to set up git
+# Go into app and flowers directories to set up git
 cd "$DIR/app"
 git init
 
-cd "$DIR/game"
+cd "$DIR/flowers"
 git init
