@@ -4,6 +4,7 @@ export interface AppConfig {
   host: string;
   storageType: "memory" | "file";
   storageFile: string;
+  corsOrigin: string;
 }
 
 export function loadConfig(): AppConfig {
@@ -12,6 +13,7 @@ export function loadConfig(): AppConfig {
   const host = process.env.HOST || "0.0.0.0";
   const storageType = process.env.STORAGE_TYPE === "file" ? "file" : "memory";
   const storageFile = process.env.STORAGE_FILE || "./data/storage.json";
+  const corsOrigin = process.env.CORS_ORIGIN || "*";
 
   return {
     secretSalt,
@@ -19,5 +21,6 @@ export function loadConfig(): AppConfig {
     host,
     storageType,
     storageFile,
+    corsOrigin,
   };
 }

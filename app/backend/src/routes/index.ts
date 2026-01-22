@@ -1,6 +1,7 @@
 import type { Route, AppContext } from "../middleware/types.ts";
 import { withErrorHandler } from "../middleware/errorHandler.ts";
 import { jsonError } from "../middleware/jsonResponse.ts";
+import { handleCORS, addCORSHeaders } from "../middleware/cors.ts";
 import { healthHandler } from "./handlers/health.ts";
 import { hashHandler } from "./handlers/hashContent.ts";
 import { storeContentHandler } from "./handlers/storeContent.ts";
@@ -48,13 +49,23 @@ function matchRoute(method: string, pathname: string): MatchResult | null {
 
 export function createRouter(context: AppContext) {
   return async (req: Request): Promise<Response> => {
+    const corsOptions = { origin: context.config.corsOrigin };
+
+    // Handle CORS preflight requests
+    const corsResponse = handleCORS(req, corsOptions);
+    if (corsResponse) {
+      return corsResponse;
+    }
+
     const url = new URL(req.url);
     const match = matchRoute(req.method, url.pathname);
 
     if (!match) {
-      return jsonError("Not found", 404);
+      const errorResponse = jsonError("Not found", 404);
+      return addCORSHeaders(errorResponse, corsOptions);
     }
 
-    return await match.handler(req, match.params, context);
+    const response = await match.handler(req, match.params, context);
+    return addCORSHeaders(response, corsOptions);
   };
 }
