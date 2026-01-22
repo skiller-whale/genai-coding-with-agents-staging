@@ -13,6 +13,122 @@ describe("Server API", () => {
     });
   });
 
+  describe("POST /content", () => {
+    test("should accept JSON with text and return URL with hash", async () => {
+      const testData = { text: "Hello, world!" };
+
+      const response = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData),
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toHaveProperty("url");
+      expect(typeof data.url).toBe("string");
+      expect(data.url).toMatch(/^\/content\/[a-f0-9]{64}$/);
+    });
+
+    test("should return different URLs for different text", async () => {
+      const testData1 = { text: "First message" };
+      const testData2 = { text: "Second message" };
+
+      const response1 = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData1),
+      });
+
+      const response2 = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData2),
+      });
+
+      const data1 = await response1.json();
+      const data2 = await response2.json();
+
+      expect(data1.url).not.toBe(data2.url);
+    });
+
+    test("should return same URL for same text", async () => {
+      const testData = { text: "Consistent message" };
+
+      const response1 = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData),
+      });
+
+      const response2 = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData),
+      });
+
+      const data1 = await response1.json();
+      const data2 = await response2.json();
+
+      expect(data1.url).toBe(data2.url);
+    });
+  });
+
+  describe("GET /content/:hash", () => {
+    test("should return stored content as plain text", async () => {
+      const testText = "Hello, world!";
+      const testData = { text: testText };
+
+      // First, POST the content
+      const postResponse = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData),
+      });
+
+      const postData = await postResponse.json();
+      const contentUrl = postData.url;
+
+      // Then, GET the content using the returned URL
+      const getResponse = await fetch(`${BASE_URL}${contentUrl}`);
+      const retrievedText = await getResponse.text();
+
+      expect(getResponse.status).toBe(200);
+      expect(getResponse.headers.get("content-type")).toContain("text/plain");
+      expect(retrievedText).toBe(testText);
+    });
+
+    test("should return 404 for non-existent hash", async () => {
+      const fakeHash = "0".repeat(64);
+      const response = await fetch(`${BASE_URL}/content/${fakeHash}`);
+
+      expect(response.status).toBe(404);
+    });
+
+    test("should handle special characters in content", async () => {
+      const testText = "Hello 世界! 🌍 Special chars: !@#$%";
+      const testData = { text: testText };
+
+      // First, POST the content
+      const postResponse = await fetch(`${BASE_URL}/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(testData),
+      });
+
+      const postData = await postResponse.json();
+      const contentUrl = postData.url;
+
+      // Then, GET the content
+      const getResponse = await fetch(`${BASE_URL}${contentUrl}`);
+      const retrievedText = await getResponse.text();
+
+      expect(getResponse.status).toBe(200);
+      expect(retrievedText).toBe(testText);
+    });
+  });
+
   describe("POST /hash", () => {
     test("should return hash for valid JSON object", async () => {
       const testData = { name: "test", value: 123 };
