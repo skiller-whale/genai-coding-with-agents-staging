@@ -2,28 +2,35 @@
 set -e
 
 if [ -z "$1" ]; then
-  echo "Usage: $0 <CHECKPOINT_NAME>"
+  echo "Usage: checkpoint <CHECKPOINT_NAME>"
   exit 1
 fi
 
-# Prompt user to confirm
-read -p "This will clear your code in app/ and replace it with checkpoint '$CHECKPOINT'. Are you sure? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Aborted."
-    exit 1
-fi
-
 CHECKPOINT=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-HOME=/Users/kay/Code/sw/curriculum/teaching_content/ai/genai/coding_with_agents_rework_v3
+HOME=/home/learner
 WORKING_FOLDER_NAME=${DEFAULT_FOLDER:-_code}
 WORKING_DIR="$HOME/$WORKING_FOLDER_NAME"
 CHECKPOINTS_DIR="$HOME/checkpoint"
 
+printf "This will clear your code in app/ and replace it with checkpoint '%s'. Are you sure? (y/n) " "$CHECKPOINT"
+read answer
+echo
+case "$answer" in
+  y|Y) ;;
+  *) echo "Aborted."; exit 1 ;;
+esac
+
 cd "$WORKING_DIR" || exit 1
-git worktree remove -f "$CHECKPOINTS_DIR"
+git worktree remove -f "$CHECKPOINTS_DIR" 2> /dev/null || true
 
 git worktree add "$CHECKPOINTS_DIR" "checkpoint-$CHECKPOINT"
+
 rm -rf app
 cp -a "$CHECKPOINTS_DIR/app" app
-git worktree remove --force "$CHECKPOINTS_DIR"
+cd app || exit 1
+git init
+
+git worktree remove --force "$CHECKPOINTS_DIR" 2> /dev/null || true
+
+echo "Checkpoint '$CHECKPOINT' loaded successfully."
+echo "You may need to click the 'refresh' icon in the file explorer to see the changes."
