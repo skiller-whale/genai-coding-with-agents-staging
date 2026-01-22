@@ -1,11 +1,18 @@
-import { hashWithSalt, isValidData } from "./hash";
+import { hashWithSalt, isValidData } from "./hash.ts";
+import type { IStorage } from "./storage/index.ts";
+import { InMemoryStorage, JSONFileStorage } from "./storage/index.ts";
 
 const SECRET_SALT = process.env.SECRET_SALT || "default-secret-salt";
 const PORT = parseInt(process.env.PORT || "6000", 10);
 const HOST = process.env.HOST || "0.0.0.0";
+const STORAGE_TYPE = process.env.STORAGE_TYPE || "memory";
+const STORAGE_FILE = process.env.STORAGE_FILE || "./data/storage.json";
 
-// In-memory storage for content
-const contentStore = new Map<string, string>();
+// Initialize storage based on configuration
+const contentStore: IStorage =
+  STORAGE_TYPE === "file"
+    ? new JSONFileStorage(STORAGE_FILE)
+    : new InMemoryStorage();
 
 const server = Bun.serve({
   port: PORT,
@@ -38,7 +45,7 @@ const server = Bun.serve({
         }
 
         const hash = hashWithSalt(body.text, SECRET_SALT);
-        contentStore.set(hash, body.text);
+        await contentStore.set(hash, body.text);
 
         return new Response(JSON.stringify({ url: `/content/${hash}` }), {
           status: 200,
@@ -60,7 +67,7 @@ const server = Bun.serve({
     // Content retrieval endpoint
     if (url.pathname.startsWith("/content/") && req.method === "GET") {
       const hash = url.pathname.slice("/content/".length);
-      const content = contentStore.get(hash);
+      const content = await contentStore.get(hash);
 
       if (!content) {
         return new Response(JSON.stringify({ error: "Not found" }), {
