@@ -25,12 +25,15 @@ git worktree remove -f "$CHECKPOINTS_DIR" 2> /dev/null || true
 
 git worktree add "$CHECKPOINTS_DIR" "checkpoint-$CHECKPOINT"
 
-rm -rf app
-cp -a "$CHECKPOINTS_DIR/app" app
+find app -mindepth 1 -delete
+cp -a "$CHECKPOINTS_DIR/app/." app/
 cd app || exit 1
 git init
 
 git worktree remove --force "$CHECKPOINTS_DIR" 2> /dev/null || true
 
+echo
 echo "Checkpoint '$CHECKPOINT' loaded successfully."
-echo "You may need to click the 'refresh' icon in the file explorer to see the changes."
+echo "For good results, now:"
+echo "  1. Close and reopen all claudes and terminals."
+echo "  2. Click refresh in the file explorer."
