@@ -9,7 +9,7 @@ services:
       WATCHER_BASE_PATH: "/app"
       ATTENDANCE_ID_FILE: "/app/sync/attendance_id"
       WATCHED_EXTS: ".html .css .md .ts .claudelog"
-      IGNORE_MATCH: ".git"
+      IGNORE_MATCH: ".git node_modules"
     volumes:
       - .:/app/code
       - ./attendance_id:/app/sync/attendance_id
