@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   sync:
     image: "ghcr.io/skiller-whale/learnersync:0.2.7-alpha.1"
