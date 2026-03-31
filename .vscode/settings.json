@@ -2,6 +2,8 @@
   "claudeCode.environmentVariables": [
     {"name": "AWS_REGION", "value": "eu-west-1"},
     {"name": "ANTHROPIC_MODEL", "value": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0"},
+    {"name": "ANTHROPIC_DEFAULT_SONNET_MODEL", "value": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0"},
+    {"name": "ANTHROPIC_DEFAULT_HAIKU_MODEL", "value": "eu.anthropic.claude-haiku-4-5-20251001-v1:0"},
     {"name": "BEDROCK_MODEL", "value": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0"},
     {"name": "ANTHROPIC_BEDROCK_BASE_URL", "value": "https://bedrock-runtime.aws-proxy.skillerwhale.com"},
     {"name": "CLAUDE_CODE_USE_BEDROCK", "value": "1"},

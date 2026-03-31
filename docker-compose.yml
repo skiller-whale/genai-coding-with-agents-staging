@@ -15,4 +15,3 @@ services:
       - /home/learner/.claude/history.jsonl:/app/.claudelog
     tty: true
     stdin_open: true
-
